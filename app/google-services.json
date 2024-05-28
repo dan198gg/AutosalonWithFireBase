@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "280314017654",
+    "project_id": "autosalon2-f4d9b",
+    "storage_bucket": "autosalon2-f4d9b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280314017654:android:45c8e9106a2a632e71ec57",
+        "android_client_info": {
+          "package_name": "com.example.fireproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ9jZhPgUHjpTC30k2eXisnhAsbnJXrRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
