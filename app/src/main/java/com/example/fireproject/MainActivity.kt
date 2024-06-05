@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -16,10 +17,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme.typography
@@ -27,8 +31,10 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MovableContent
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -87,19 +93,20 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     val context=LocalContext.current
     val fs=Firebase.firestore
     val storage=Firebase.storage.reference.child("машины🥸")
-    val lst= remember {
+    var lst by remember {
         mutableStateOf(emptyList<CarModel>())
     }
     fs.collection("cars").get().addOnCompleteListener{
         task->
         if(task.isSuccessful){
-            lst.value=task.result.toObjects(CarModel::class.java)
+            lst=task.result.toObjects(CarModel::class.java)
         }
     }
     Column(modifier = Modifier
@@ -108,13 +115,13 @@ fun GreetingPreview() {
         .fillMaxWidth(1f)
 
     ) {
-        LazyColumn(
-            Modifier
-                .fillMaxWidth(1f)
-                .fillMaxHeight(0.8f)
-                .border(10.dp, Color.Red)) {
-            items(lst.value){
-                car->
+        var pagerState= rememberPagerState {
+            lst.size
+        }
+        HorizontalPager(state = pagerState,modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f)) {
+                page->
+
+                var car=lst[page]
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(1f)
@@ -122,8 +129,14 @@ fun GreetingPreview() {
 
                     )
                 {
-                    Row(modifier = Modifier.fillMaxWidth(1f).fillMaxHeight(0.9f)) {
-                        AsyncImage(model = car.imageUrl, contentDescription = null, modifier = Modifier.padding(10.dp).size(150.dp,100.dp).border(10.dp, color = Color.Gray))
+                    Row(modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .fillMaxHeight(0.9f)) {
+                        AsyncImage(model =car.imageUrl, contentDescription = null, modifier = Modifier
+                            .padding(10.dp)
+                            .size(150.dp, 100.dp)
+                            .border(10.dp, color = Color.Gray))
+
                         Log.i("IMGURL",car.imageUrl)
                         Text("${car.brand} ${car.model}", fontSize = 25.sp,
                             textAlign = TextAlign.Center
@@ -136,12 +149,28 @@ fun GreetingPreview() {
         Button(onClick = {
 //                         storage.child("bmw330i2019(3).jpeg").putBytes(bitmapToByteArray(context))
             context.startActivity(Intent(context, AddCarModelActivity::class.java))
-        }, modifier = Modifier.fillMaxWidth()) {
+        }, modifier = Modifier.fillMaxWidth().offset(0.dp,670.dp)) {
             Text(text = "добавить автомобиль", fontSize = 25.sp)
         }
     }
-}
 
+//@OptIn(ExperimentalFoundationApi::class)
+//@Composable
+//fun pagination(){
+//    var pagerState= rememberPagerState {
+//        emptyList<CarModel>().size
+//    }
+//    HorizontalPager(state = pagerState,modifier = Modifier.fillMaxSize()) {
+//        AsyncImage(model = car.imageUrl, contentDescription = null, modifier = Modifier
+//            .padding(10.dp)
+//            .size(150.dp, 100.dp)
+//            .border(10.dp, color = Color.Gray))
+//        Log.i("IMGURL",car.imageUrl)
+//        Text("${car.brand} ${car.model}", fontSize = 25.sp,
+//            textAlign = TextAlign.Center
+//        )
+//    }
+//}
 fun bitmapToByteArray(context:android.content.Context,uri: Uri): ByteArray{
     val inputStream=context.contentResolver.openInputStream(uri)
     val bitmap=BitmapFactory.decodeStream(inputStream)

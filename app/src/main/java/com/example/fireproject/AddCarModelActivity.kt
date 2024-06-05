@@ -53,8 +53,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import com.example.fireproject.data.CarModel
 import com.example.fireproject.ui.theme.FIreProjectTheme
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import androidx.activity.compose.rememberLauncherForActivityResult as rememberLauncherForActivityResult
 
@@ -80,6 +82,7 @@ fun stroke(myContext: Context) {
     var text5 by rememberSaveable { mutableStateOf("") }
     var text6 by rememberSaveable { mutableStateOf("") }
     var text7 by rememberSaveable { mutableStateOf("") }
+    var launch=false
     val context=LocalContext.current
     Box(modifier = Modifier.fillMaxSize()) {
         TextField(
@@ -170,7 +173,9 @@ fun stroke(myContext: Context) {
                    if(uriStr[i]=='/'){
                        val len=uriStr.length
                        uriStr=uriStr.slice(i+1 .. len-1)
+                       launch=true
                        break
+
                }
             }
             storage.child("$uriStr.jpg").putBytes(bitmapToByteArray(myContext,uri))
@@ -183,16 +188,30 @@ fun stroke(myContext: Context) {
             Text(text = "Добавить фото")
 
         }
+        var mut= rememberSaveable{ mutableStateOf(0.2f)}
         IconButton(onClick = {
-
+            val fs=Firebase.firestore
+                    fs.collection("cars").document().set(
+                        CarModel(text1
+            ,text2
+            , mapOf("ЛС" to text3,
+                "Мотор" to text5,
+                "КПП" to text4,
+                "привод" to text6),
+            mutableListOf("Red","Blue"),text7, imageUrl = launcher.toString())
+                    )
         }, modifier = Modifier
             .offset(30.dp, 700.dp)
-            .size(250.dp,100.dp).alpha(0.2f)) {
+            .size(250.dp,100.dp).alpha(mut.value)) {
+            if (text1.isNotEmpty() && text2.isNotEmpty() && text3.isNotEmpty() && text4.isNotEmpty() && text5.isNotEmpty() && text6.isNotEmpty() &&text7.isNotEmpty()){
+                mut.value=1f
+            }
             Icon(imageVector = Icons.Rounded.Done, contentDescription = "", modifier = Modifier
                 .size(50.dp)
                 .border(3.dp, Color.Black))
             Text(text = "Подтвердить", modifier = Modifier.offset(80.dp), fontWeight = FontWeight.Bold)
         }
+
 
     }
     
